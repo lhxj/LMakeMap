@@ -14,7 +14,7 @@ public class AStar {
     private List<Node> closeList;//关闭列表
     //4个方向上的权重有一定的规则，重心应该偏左上
     private final int COST_STRAIGHT_Z = 10;
-    private final int COST_STRAIGHT_Q = 12;
+    private final int COST_STRAIGHT_Q = 15;
     private int row;//行
     private int column;//列
 
