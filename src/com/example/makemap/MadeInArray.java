@@ -1,5 +1,7 @@
 package com.example.makemap;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -20,6 +22,8 @@ public class MadeInArray {
     private static final int DEFAULT_PATH_COUNT = 100;
     //地图绘制多次路径后剩余数量
     private int pathOdd;
+    //路径点情况记录
+    private LinkedList<PathPoint> pathList;
 
     public MadeInArray() {
         this.mapArray = new int[DEFAULT_WIDTH][DEFAULT_HEIGHT];
@@ -37,10 +41,12 @@ public class MadeInArray {
      * @return false-失败 true-成功
      */
     private boolean init() {
+        pathList = new LinkedList<PathPoint>();
         //首先初始化地图参数以后加入障碍物
         joinBarrierPoint();
         //然后再根据其绘制地图路径
         Point initPoint = initOrigin();
+        pathList.add(new PathPoint(initPoint.getX(), initPoint.getY()));
         Point begin = initPoint;
         int pathCount = 0;
         while (pathOdd > 0) {
@@ -162,12 +168,14 @@ public class MadeInArray {
             nextPointY = new Random().nextInt(mapHeigh());
         } while (mapArray[nextPointX][nextPointY] != 0);
         Point y = new Point(nextPointX, nextPointY);
-        int flag = aStar.search(x.getX(), x.getY(), y.getX(), y.getY(), count + 1);
-        if (flag == -1 || flag == 0) {
+        List<PathPoint> list = aStar.search(x.getX(), x.getY(), y.getX(), y.getY(), count + 1);
+        if (list == null || list.size() <= 0) {
             System.out.println("-----计算出两点之间的路径出现数据问题或没有计算出两点之间的路径!  --- 重试第" + retry + "次");
             y = getThePath(x, count, retry + 1);
         } else {
-            pathOdd -= flag;
+            pathList.removeLast();
+            pathList.addAll(list);
+            pathOdd -= list.size();
         }
         return y;
     }
@@ -181,6 +189,10 @@ public class MadeInArray {
 
     public int[][] getMapArray() {
         return mapArray;
+    }
+
+    public LinkedList<PathPoint> getPathList() {
+        return pathList;
     }
 
     private int mapWidth() {
@@ -216,6 +228,9 @@ public class MadeInArray {
                 }
             }
             System.out.println();
+        }
+        for (PathPoint point : map.getPathList()) {
+            System.out.println(point.toString());
         }
     }
 }

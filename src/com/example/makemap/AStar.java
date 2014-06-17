@@ -27,24 +27,23 @@ public class AStar {
     }
 
     //查找坐标（-1：错误，0：没找到，1：找到了）
-    public int search(int x1, int y1, int x2, int y2, int count) {
+    public List<PathPoint> search(int x1, int y1, int x2, int y2, int count) {
         if (x1 < 0 || x1 >= row || x2 < 0 || x2 >= row || y1 < 0 || y1 >= column || y2 < 0 || y2 >= column) {
-            return -1;
+            return null;
         }
         if (map[x1][y1] != 1) {
-            return -1;
+            return null;
         }
         Node sNode = new Node(x1, y1, null);
         Node eNode = new Node(x2, y2, null);
         openList.add(sNode);
         List<Node> resultList = search(sNode, eNode);
-        if (resultList.size() == 0) {
-            return 0;
-        }
+        List<PathPoint> pathList = new ArrayList<PathPoint>();
         for (Node node : resultList) {
+            pathList.add(new PathPoint(node.getX(), node.getY()));
             map[node.getX()][node.getY()] = count;
         }
-        return resultList.size();
+        return pathList;
     }
 
     //查找核心算法
@@ -164,38 +163,6 @@ public class AStar {
     private void countF(Node node) {
         node.setF(node.getG() + node.getH());
     }
-
-    public static void main(String[] args) {
-        int[][] map = new int[][]{// 地图数组
-                {0, 0, 0, 0, 0, 0, 2, 2, 0, 0},
-                {0, 0, 0, 0, 2, 0, 2, 0, 0, 0},
-                {0, 0, 0, 0, 2, 0, 2, 0, 0, 0},
-                {0, 0, 1, 0, 2, 0, 2, 0, 0, 0},
-                {0, 0, 0, 0, 2, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 2, 0, 0, 0, 0, 0}
-        };
-        AStar aStar = new AStar(map, 6, 10);
-        int flag = aStar.search(3, 2, 3, 8, 1);
-        if (flag == -1) {
-            System.out.println("传输数据有误！");
-        } else if (flag == 0) {
-            System.out.println("没找到！");
-        } else {
-            for (int x = 0; x < 6; x++) {
-                for (int y = 0; y < 10; y++) {
-                    if (map[x][y] == 1) {
-                        System.out.print("￥");
-                    } else if (map[x][y] == 0) {
-                        System.out.print("〓");
-                    } else if (map[x][y] == 2) {//输出搜索路径
-                        System.out.print("※");
-                    }
-                }
-                System.out.println();
-            }
-        }
-    }
-
 }
 
 //节点类
