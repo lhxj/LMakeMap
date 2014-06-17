@@ -1,10 +1,5 @@
 package com.example.makemap;
 
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -18,11 +13,11 @@ public class MadeInArray {
     //地图中默认的障碍物为99
     private static final int DEFAULT_BARRIER = 99;
     //地图中默认的障碍物数量范围 （如：5至20个随机的，值为15）
-    private static final int DEFAULT_BARRIER_COUNT = 20;
+    //private static final int DEFAULT_BARRIER_COUNT = 20;
     //地图参数数组结构
     private int[][] mapArray;
     //地图路径数量默认设置为80步以上就可以了
-    private static final int DEFAULT_PATH_COUNT = 80;
+    private static final int DEFAULT_PATH_COUNT = 100;
     //地图绘制多次路径后剩余数量
     private int pathOdd;
 
@@ -66,18 +61,83 @@ public class MadeInArray {
      * 加入随机障碍物的坐标
      */
     private void joinBarrierPoint() {
-        //随机加入4-8个障碍物（只占一个单元格）
-        int barrierCount = new Random().nextInt(DEFAULT_BARRIER_COUNT) + 5;
+        //随机加入N个障碍物（3*4 6*2 12*1 左右）
+        int b4Count = new Random().nextInt(4) + 1;
+        int b2Count = new Random().nextInt(8) + 1;
+        int b1Count = new Random().nextInt(16) + 1;
         int mapWidth = mapWidth();
         int mapHeight = mapHeigh();
-        for (int i = 0; i < barrierCount; i++) {
+        for (int i = 0; i < b4Count; i++) {
+            //设置4的障碍
             int point = new Random().nextInt(mapWidth * mapHeight);
             int pointHeight = point / mapWidth;
             int pointWidth = point % mapWidth;
+            //找到设置点以后需要判断附近4点是否可设置
+            if (mapArray[pointWidth][pointHeight] == 0 && mapArray[(pointWidth + 1) % mapWidth][pointHeight] == 0
+                    && mapArray[pointWidth][(pointHeight + 1) % mapHeight] == 0 && mapArray[(pointWidth + 1) % mapWidth][(pointHeight + 1) % mapHeight] == 0) {
+                mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
+                mapArray[(pointWidth + 1) % mapWidth][pointHeight] = DEFAULT_BARRIER;
+                mapArray[pointWidth][(pointHeight + 1) % mapHeight] = DEFAULT_BARRIER;
+                mapArray[(pointWidth + 1) % mapWidth][(pointHeight + 1) % mapHeight] = DEFAULT_BARRIER;
+            } else {
+                b4Count += 1;
+            }
+        }
+        for (int i = 0; i < b2Count; i++) {
+            //设置2的障碍
+            int point = new Random().nextInt(mapWidth * mapHeight);
+            int pointHeight = point / mapWidth;
+            int pointWidth = point % mapWidth;
+            //找到设置点以后需要判断附近2点是否可设置
+            int direction = new Random().nextInt(4);
+            switch (direction) {
+                case 0:
+                    if (mapArray[pointWidth][pointHeight] == 0
+                            && mapArray[(pointWidth + 1) % mapWidth][pointHeight] == 0) {
+                        mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
+                        mapArray[(pointWidth + 1) % mapWidth][pointHeight] = DEFAULT_BARRIER;
+                    } else {
+                        b2Count += 1;
+                    }
+                    break;
+                case 1:
+                    if (mapArray[pointWidth][pointHeight] == 0 && mapArray[pointWidth][Math.abs(pointHeight - 1)] == 0) {
+                        mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
+                        mapArray[pointWidth][Math.abs(pointHeight - 1)] = DEFAULT_BARRIER;
+                    } else {
+                        b2Count += 1;
+                    }
+                    break;
+                case 2:
+                    if (mapArray[pointWidth][pointHeight] == 0 && mapArray[pointWidth][(pointHeight + 1) % mapHeight] == 0) {
+                        mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
+                        mapArray[pointWidth][(pointHeight + 1) % mapHeight] = DEFAULT_BARRIER;
+                    } else {
+                        b2Count += 1;
+                    }
+                    break;
+                case 3:
+                    if (mapArray[pointWidth][pointHeight] == 0 && mapArray[Math.abs(pointWidth - 1)][pointHeight] == 0) {
+                        mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
+                        mapArray[Math.abs(pointWidth - 1)][pointHeight] = DEFAULT_BARRIER;
+                    } else {
+                        b2Count += 1;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        for (int i = 0; i < b1Count; i++) {
+            //设置1的障碍
+            int point = new Random().nextInt(mapWidth * mapHeight);
+            int pointHeight = point / mapWidth;
+            int pointWidth = point % mapWidth;
+            //找到设置点以后需要判断1点是否可设置
             if (mapArray[pointWidth][pointHeight] == 0) {
                 mapArray[pointWidth][pointHeight] = DEFAULT_BARRIER;
             } else {
-                barrierCount += 1;
+                b1Count += 1;
             }
         }
     }
@@ -86,16 +146,17 @@ public class MadeInArray {
      * 根据转角点和障碍物计算出路径加入到地图二维数组矩阵中
      */
     private Point getThePath(Point x, int count, int retry) {
-        if (retry >= 5) {
+        if (retry >= 4) {
             return null;
         }
         AStar aStar = new AStar(mapArray, mapWidth(), mapHeigh());
         int nextPointX;
         int nextPointY;
         do {
-            nextPointX = new Random().nextInt(3) + x.getX() - 1;
-            nextPointX = nextPointX > 0 ? (nextPointX > mapWidth() - 1 ? mapWidth() - 1 : nextPointX) : 1;
+            nextPointX = Math.abs(new Random().nextInt(3) + x.getX() - 1);
+            nextPointX = nextPointX > mapWidth() - 1 ? mapWidth() - 1 : nextPointX;
             if (nextPointX == mapWidth() - 1) {
+                //到底了以后就作为完结，不需要达到步数也可
                 pathOdd = 0;
             }
             nextPointY = new Random().nextInt(mapHeigh());
@@ -146,10 +207,6 @@ public class MadeInArray {
             for (int j = 0; j < array[0].length; j++) {
                 if (array[i][j] == 0) {
                     System.out.print("〓");
-                    //} else if (array[i][j] == 1) {
-                    //    System.out.print("11");
-                    // } else if (array[i][j] == 2) {
-                    //     System.out.print("※");
                 } else if (array[i][j] >= 10 && array[i][j] != DEFAULT_BARRIER) {
                     System.out.print(array[i][j]);
                 } else if (array[i][j] == DEFAULT_BARRIER) {
