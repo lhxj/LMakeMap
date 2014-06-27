@@ -1,34 +1,21 @@
 package com.example.makemap;
 
-import loon.LGame;
-import loon.LSetting;
-import loon.core.graphics.opengl.LTexture;
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 
 /**
+ * 主程序
  * Created by Administrator on 2014/6/14.
  */
-public class MainActivity extends LGame {
-
-
-    @Override
-    public void onMain() {
-        LTexture.ALL_LINEAR = true;
-        LSetting setting = new LSetting();
-        setting.width = 800;
-        setting.height = 600;
-        setting.fps = 60;
-        setting.landscape = true;
-        setting.showFPS = false;
-        register(setting, Map.class);
-    }
+public class MainActivity extends Activity {
 
     @Override
-    public void onGameResumed() {
-
-    }
-
-    @Override
-    public void onGamePaused() {
-
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(new MyView(this));
     }
 }

@@ -12,9 +12,12 @@ public class AStar {
     private int[][] map;//地图(1可通过 0不可通过)
     private List<Node> openList;//开启列表
     private List<Node> closeList;//关闭列表
-    //4个方向上的权重有一定的规则，重心应该偏左上
-    private final int COST_STRAIGHT_Z = 15;
-    private final int COST_STRAIGHT_Q = 10;
+    //4个方向上的权重有一定的规则，默认无重心
+    private static final int DEFAULT_STRAIGHT = 10;
+    private int straightLeft;
+    private int straightRight;
+    private int straightUp;
+    private int straightDown;
     private int row;//行
     private int column;//列
 
@@ -24,6 +27,19 @@ public class AStar {
         this.column = column;
         openList = new ArrayList<Node>();
         closeList = new ArrayList<Node>();
+        straightDown = straightLeft = straightRight = straightUp = DEFAULT_STRAIGHT;
+    }
+
+    public AStar(int[][] map, int row, int column, int straightLeft, int straightRight, int straightUp, int straightDown) {
+        this.map = map;
+        this.row = row;
+        this.column = column;
+        openList = new ArrayList<Node>();
+        closeList = new ArrayList<Node>();
+        this.straightLeft = DEFAULT_STRAIGHT + straightLeft;
+        this.straightRight = DEFAULT_STRAIGHT + straightRight;
+        this.straightUp = DEFAULT_STRAIGHT + straightUp;
+        this.straightDown = DEFAULT_STRAIGHT + straightDown;
     }
 
     //查找坐标（-1：错误，0：没找到，1：找到了）
@@ -61,19 +77,19 @@ public class AStar {
             }
             //上
             if ((node.getY() - 1) >= 0) {
-                checkPath(node.getX(), node.getY() - 1, node, eNode, COST_STRAIGHT_Z);
+                checkPath(node.getX(), node.getY() - 1, node, eNode, straightUp);
             }
             //下
             if ((node.getY() + 1) < column) {
-                checkPath(node.getX(), node.getY() + 1, node, eNode, COST_STRAIGHT_Q);
+                checkPath(node.getX(), node.getY() + 1, node, eNode, straightDown);
             }
             //左
             if ((node.getX() - 1) >= 0) {
-                checkPath(node.getX() - 1, node.getY(), node, eNode, COST_STRAIGHT_Z);
+                checkPath(node.getX() - 1, node.getY(), node, eNode, straightLeft);
             }
             //右
             if ((node.getX() + 1) < row) {
-                checkPath(node.getX() + 1, node.getY(), node, eNode, COST_STRAIGHT_Q);
+                checkPath(node.getX() + 1, node.getY(), node, eNode, straightRight);
             }
             //从开启列表中删除
             //添加到关闭列表中
