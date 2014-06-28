@@ -21,6 +21,7 @@ public class MyView extends SurfaceView implements SurfaceHolder.Callback, Runna
     private Thread thread;
     private Resources resources;
     private Bitmap bitmap;
+    private Bitmap renwu;
     private int screenWidth, screenHeight;
     //路径点情况记录
     private LinkedList<PathPoint> pathList;
@@ -28,6 +29,8 @@ public class MyView extends SurfaceView implements SurfaceHolder.Callback, Runna
     private int[][] mapArray;
     //用于同步锁的字节码对象
     private byte[] aByte = new byte[0];
+    private int times = 0;
+    private Paint paint = new Paint();
 
     //地图一些测试参数
     private int[][] back = {{0, 1}};
@@ -40,6 +43,7 @@ public class MyView extends SurfaceView implements SurfaceHolder.Callback, Runna
         thread = new Thread(this);
         resources = this.getResources();
         bitmap = BitmapFactory.decodeResource(resources, R.drawable.pic);
+        renwu = BitmapFactory.decodeResource(resources, R.drawable.renwu);
         surfaceHolder = this.getHolder();
         if (surfaceHolder != null) {
             surfaceHolder.addCallback(this);
@@ -56,7 +60,9 @@ public class MyView extends SurfaceView implements SurfaceHolder.Callback, Runna
     }
 
     private void onDraw() {
-        Log.d(TAG, "测试onDraw方法---------success");
+        //Log.d(TAG, "测试onDraw方法---------success");
+        drawGirlRun(renwu.getWidth() / 8, renwu.getHeight() / 4, 0, times, paint);
+        times += 1;
     }
 
     /**
@@ -172,10 +178,37 @@ public class MyView extends SurfaceView implements SurfaceHolder.Callback, Runna
         }
     }
 
+    private void drawGirlRun(int w, int h, int direction, int count, Paint paint) {
+        Bitmap girl = Bitmap.createBitmap(renwu, w * (count % 8), h * direction, w, h);
+        Canvas canvas = null;
+        try {
+            canvas = surfaceHolder.lockCanvas(new Rect(0, 0, w, h));
+            /*if (canvas != null) {
+                canvas.save();
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                canvas.drawBitmap(girl, 0, 0, null);
+                canvas.restore();
+            }*/
+        } catch (Exception e) {
+            Log.e(TAG, "人物行走测试出现问题---" + e.getMessage());
+        } finally {
+            if (canvas != null) {
+                surfaceHolder.unlockCanvasAndPost(canvas);
+            }
+        }
+    }
+
     @Override
     public void run() {
         initBackGround(bitmap.getWidth() / 8, bitmap.getHeight() / 20);
-        onDraw();
+        while (true) {
+            onDraw();
+            try {
+                Thread.sleep(300);
+            } catch (Exception e) {
+                Log.e(TAG, "run方法异常" + e.getMessage());
+            }
+        }
     }
 
     @Override
